@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/FingerPrint.iml" filepath="$PROJECT_DIR$/.idea/modules/FingerPrint.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/OpenCV/FingerPrint.OpenCV.iml" filepath="$PROJECT_DIR$/.idea/modules/OpenCV/FingerPrint.OpenCV.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/FingerPrint.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/FingerPrint.app.iml" />
     </modules>
   </component>

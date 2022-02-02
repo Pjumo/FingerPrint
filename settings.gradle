@@ -8,3 +8,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "FingerPrint"
 include ':app'
+include ':OpenCV'
