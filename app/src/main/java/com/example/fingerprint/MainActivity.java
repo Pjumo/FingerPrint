@@ -2,6 +2,9 @@ package com.example.fingerprint;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -26,16 +29,18 @@ import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final static String TAG = MainActivity.class.getClass().getSimpleName();
+    private final String TAG = this.getClass().getSimpleName();
     private boolean isOpenCvLoaded = false;
+
+    final ImageView imageView = findViewById(R.id.imageView);
+    final ImageView imageView2 = findViewById(R.id.imageView2);
+    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.fp);
+    Bitmap bitmap_result = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        final ImageView imageView = findViewById(R.id.imageView);
-        final ImageView imageView2 = findViewById(R.id.imageView2);
 
         Button button = findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener(){
@@ -43,37 +48,45 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view){
                 if(!isOpenCvLoaded)
                     return;
-                try{
-                    InputStream is = getAssets().open("fp.jpg");
-                    Bitmap bitmap = BitmapFactory.decodeStream(is);
-                    Bitmap bitmap_result = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-                    imageView.setImageBitmap(bitmap);
 
-                    Mat fingerprint = new Mat();
-                    Mat result = new Mat();
-                    Utils.bitmapToMat(bitmap, fingerprint);
+                imageView.setImageBitmap(bitmap);
 
-                    Imgproc.Canny(fingerprint, result, 50, 150);
+                Mat fingerprint = new Mat();
+                Mat result = new Mat();
+                Utils.bitmapToMat(bitmap, fingerprint);
 
-                    Utils.matToBitmap(result, bitmap_result);
-                    imageView2.setImageBitmap(bitmap_result);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                Imgproc.Canny(fingerprint, result, 50, 150);
+
+                Utils.matToBitmap(result, bitmap_result);
+                imageView2.setImageBitmap(bitmap_result);
             }
         });
     }
 
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+//    public static int getImageByteSize(int w, int h, Bitmap.Config config) {
+//        int byteSize = w * h;
+//        switch(config){
+//            case ARGB_8888:
+//                byteSize*=4;
+//                break;
+//            case RGB_565:
+//            case ARGB_4444:
+//                byteSize*=2;
+//            case ALPHA_8:
+//                break;
+//            default:
+//                return -1;
+//        }
+//        return byteSize;
+//    }
+
+    private final BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status){
-            switch(status){
-                case LoaderCallbackInterface.SUCCESS:
-                    Log.i(TAG, "OpenCV loaded successfully");
-                    break;
-                default:
-                    super.onManagerConnected(status);
-                    break;
+            if (status == LoaderCallbackInterface.SUCCESS) {
+                Log.i(TAG, "OpenCV loaded successfully");
+            } else {
+                super.onManagerConnected(status);
             }
         }
     };
@@ -93,5 +106,15 @@ public class MainActivity extends AppCompatActivity {
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
             isOpenCvLoaded=true;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        bitmap.recycle();
+        bitmap_result.recycle();
+        bitmap = null;
+        bitmap_result = null;
+
+        super.onDestroy();
     }
 }
