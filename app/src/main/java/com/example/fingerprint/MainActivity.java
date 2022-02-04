@@ -1,5 +1,6 @@
 package com.example.fingerprint;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -18,6 +19,8 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
@@ -28,39 +31,83 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
-
     private final String TAG = this.getClass().getSimpleName();
     private boolean isOpenCvLoaded = false;
 
-    final ImageView imageView = findViewById(R.id.imageView);
-    final ImageView imageView2 = findViewById(R.id.imageView2);
-    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.fp);
-    Bitmap bitmap_result = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+    int fpLevel = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ImageView imageView2;
+        ImageView imageView;
+
+        imageView = findViewById(R.id.imageView);
+        imageView2 = findViewById(R.id.imageView2);
+
         Button button = findViewById(R.id.button);
+
+
         button.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
                 if(!isOpenCvLoaded)
                     return;
 
-                imageView.setImageBitmap(bitmap);
+                //fpLevel 지정하여 전처리, 특징점추출 등의 순서를 지정
+                switch (fpLevel) {
+                    case 0:
+                        Mat fingerprint = new Mat();
+                        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.fp);
+                        Utils.bitmapToMat(bitmap, fingerprint);
 
-                Mat fingerprint = new Mat();
-                Mat result = new Mat();
-                Utils.bitmapToMat(bitmap, fingerprint);
+                        Bitmap bitmap_result = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+                        imageView.setImageBitmap(bitmap);
 
-                Imgproc.Canny(fingerprint, result, 50, 150);
+                        Mat result = Pretreatment(fingerprint);
 
-                Utils.matToBitmap(result, bitmap_result);
-                imageView2.setImageBitmap(bitmap_result);
+                        Utils.matToBitmap(result, bitmap_result);
+                        imageView2.setImageBitmap(bitmap_result);
+
+                        fpLevel++;
+                        break;
+                    case 1:
+                    default:
+                        break;
+                }
             }
         });
+    }
+
+    public static Mat Pretreatment(Mat mainFP){
+        Mat resultFP = new Mat();
+
+        // LSM알고리즘
+
+       int c = mainFP.cols();
+        int r = mainFP.rows();
+
+        for(int i=0;i<r;i++){
+            for(int j=0;j<c;j++){
+
+            }
+        }
+
+
+        //Sobel Mask
+        /*Mat sobelFP_x = new Mat(), sobelFP_y = new Mat();
+        Mat sobelFP_x_abs = new Mat(), sobelFP_y_abs = new Mat();
+
+        Imgproc.Sobel(mainFP, sobelFP_x, CvType.CV_16S, 1, 0, 3, 1, 128);
+        Imgproc.Sobel(mainFP, sobelFP_y, CvType.CV_16S, 0, 1, 3, 1, 128);
+
+        Core.convertScaleAbs(sobelFP_x, sobelFP_x_abs);
+        Core.convertScaleAbs(sobelFP_y, sobelFP_y_abs);
+
+        Core.addWeighted(sobelFP_x_abs, 0.5, sobelFP_y_abs, 0.5, 1, resultFP, 8);*/
+        return resultFP;
     }
 
 //    public static int getImageByteSize(int w, int h, Bitmap.Config config) {
@@ -108,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
+    /*@Override
     protected void onDestroy() {
         bitmap.recycle();
         bitmap_result.recycle();
@@ -116,5 +163,5 @@ public class MainActivity extends AppCompatActivity {
         bitmap_result = null;
 
         super.onDestroy();
-    }
+    }*/
 }
